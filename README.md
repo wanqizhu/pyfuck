@@ -1,7 +1,6 @@
 # Pyfuck -- Esoteric Python using only **[(+travels')]**.
 
-
-How few distinct characters can we use to simulate any python program?
+How few distinct characters can we use to write and execute any python program?
 
 We can at least do 13! **[(+travels')]**
 
@@ -14,7 +13,6 @@ Inspired by [jsfuck](jsfuck.com).
 
 
 # Encoding Process
-----------------------
 
 To evaluate any python expression, we can turn it into a string and call `eval()`. Because we can decompose the string arbituarily (break up each character and rebuilding with `+`), our main idea is to use our small set of characters and map to an arbituary character, which then enables us to execute arbituarily complex python code.
 
@@ -22,11 +20,12 @@ To evaluate any python expression, we can turn it into a string and call `eval()
 First, we notice that `+True` converts the boolean into the integer 1, and `+False` gives 0. This allows us to build up the integers:
 
 ```python
-digits = {
+digits =
+{
     0: '+all([[]])',
     1:  '+all([])',
     2: 'all([])+all([])'  # 1 + 1
-    # and so forth
+                          # and so forth
 }
 ```
 
@@ -91,7 +90,6 @@ See [source code](pyfuck.py) for full details!
 
 
 # Examples
---------
 
 ## Encoding arbituary characters
 
@@ -146,12 +144,7 @@ See [source code](pyfuck.py) for full details!
 
 ## Hello World
 
-```python
-print("Hello, world!")
-```
-
-**Encodes into:**
-
+The following code will encode `print("Hello, world!")`:
 
 
 ```python
@@ -178,7 +171,6 @@ Test it yourseslf, and the expressnion above evaluates to`'print("Hello world!)'
 
 
 # TODO
-----------------------
 
 * Make compatible with python2
 * Integrate with https://github.com/csvoss/onelinerizer to execute any python program
