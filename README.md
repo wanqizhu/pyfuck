@@ -93,6 +93,8 @@ See [source code](pyfuck.py) for full details!
 Examples
 --------
 
+# Encoding arbituary characters
+
 ```python
 '@' = chr(64)
     = eval('c'                + 'h'                                   + 'r(' + '64' + ')')
@@ -102,12 +104,46 @@ Examples
     = ...                     # substituting expression for '.', 'c', 'o', 'u', 'n'; substituing +all([]) for 1
 
 
-    = eval(''+eval('str(str)[+all([])]')+eval('str(str'+eval('str('+str(eval)[eval(str((+all([])))+str((+all([[]]))))]+'l'+str(eval)[eval(str((+all([])))+str((all([])+all([])+all([])+all([])+all([])+all([]))))]+'at((+all([]))))[(+all([]))]')+str(str)[+all([])]+str(eval)[eval(str((+all([])))+str((all([])+all([])+all([])+all([])+all([])+all([]))))]+str(eval)[(all([])+all([]))]+str(eval)[(all([])+all([])+all([])+all([])+all([])+all([])+all([])+all([]))]+'t)[(all([])+all([])+all([])+all([]))]')+'r('+str((all([])+all([])+all([])+all([])+all([])+all([])))+str((all([])+all([])+all([])+all([])))+')')
+    = eval(''+eval('str(str)[+all([])]')      # 'c' 
+                                              # 'h' = str(str.count)[4]
+
+             +eval('str(str'                                              # str(str
+                                                                          # '.' = str(float(1)[1])
+
+                    +eval('str('                                                          # str(
+                          +str(eval)[eval(str((+all([])))+str((+all([[]]))))]             # f
+                          +'l'                                                            # l
+                          +str(eval)[eval(str((+all([])))                                 # o
+                                         +str((all([])+all([])+all([])
+                                              +all([])+all([])+all([]))))]
+                          +'at((+all([]))))[(+all([]))]')                                 # at(1)[1]
+
+                    +str(str)[+all([])]                                   # c 
+                                                                          # o = str(eval)[16]
+                    +str(eval)[eval(str((+all([])))
+                                    +str((all([])+all([])+all([])
+                                         +all([])+all([])+all([]))))]
+                                                 
+                    +str(eval)[(all([])+all([]))]                         # u
+                                                               
+                    +str(eval)[(all([])+all([])+all([])+all([])           # n
+                               +all([])+all([])+all([])+all([]))]
+                                                                 
+                    +'t)[(all([])+all([])+all([])+all([]))]')             # t)[4]
+
+             +'r('                            # 'r(
+              '
+             +str((all([])+all([])+all([])    # '6'
+                  +all([])+all([])+all([])))
+                                              # '4'
+             +str((all([])+all([])+all([])+all([])))
+             +')'                             # ')'
+          )
 
 ```
 
 
-
+# Hello World
 
 ```python
 print("Hello, world!")
@@ -134,7 +170,7 @@ eval(''+eval('str(str)[+all([])]')+eval('str(str'+eval('str('+str(eval)[eval(str
 
 6019 characters, but only 13 unique ones!
 
-If you evaluate the string, you get`'print("Hello world!)'`. Add eval(...) around it to actually run the command.
+Test it yourseslf, and the expressnion above evaluates to`'print("Hello world!)'`! Add eval(...) around it to actually run the command.
 
 
 
