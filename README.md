@@ -1,4 +1,4 @@
-Pyfuck -- Esoteric Python using only **[(+travels')]**.
+#Pyfuck -- Esoteric Python using only **[(+travels')]**.
 =========
 
 How few distinct characters can we use to simulate any python program?
@@ -13,7 +13,7 @@ Inspired by [jsfuck](jsfuck.com).
 
 
 
-Encoding Process
+#Encoding Process
 ----------------------
 
 To evaluate any python expression, we can turn it into a string and call `eval()`. Because we can decompose the string arbituarily (break up each character and rebuilding with `+`), our main idea is to use our small set of characters and map to an arbituary character, which then enables us to execute arbituarily complex python code.
@@ -90,10 +90,10 @@ See [source code](pyfuck.py) for full details!
 
 
 
-Examples
+# Examples
 --------
 
-# Encoding arbituary characters
+### Encoding arbituary characters
 
 ```python
 '@' = chr(64)
@@ -143,7 +143,7 @@ Examples
 ```
 
 
-# Hello World
+### Hello World
 
 ```python
 print("Hello, world!")
@@ -176,7 +176,7 @@ Test it yourseslf, and the expressnion above evaluates to`'print("Hello world!)'
 
 
 
-TODO
+#TODO
 ----------------------
 
 * Compatible with python2
