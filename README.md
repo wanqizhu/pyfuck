@@ -1,5 +1,5 @@
-#Pyfuck -- Esoteric Python using only **[(+travels')]**.
-=========
+# Pyfuck -- Esoteric Python using only **[(+travels')]**.
+
 
 How few distinct characters can we use to simulate any python program?
 
@@ -13,7 +13,7 @@ Inspired by [jsfuck](jsfuck.com).
 
 
 
-#Encoding Process
+# Encoding Process
 ----------------------
 
 To evaluate any python expression, we can turn it into a string and call `eval()`. Because we can decompose the string arbituarily (break up each character and rebuilding with `+`), our main idea is to use our small set of characters and map to an arbituary character, which then enables us to execute arbituarily complex python code.
@@ -93,7 +93,7 @@ See [source code](pyfuck.py) for full details!
 # Examples
 --------
 
-### Encoding arbituary characters
+## Encoding arbituary characters
 
 ```python
 '@' = chr(64)
@@ -104,9 +104,10 @@ See [source code](pyfuck.py) for full details!
     = ...                     # substituting expression for '.', 'c', 'o', 'u', 'n'; substituing +all([]) for 1
 
 
-    = eval(''+eval('str(str)[+all([])]')      # 'c' 
-                                              # 'h' = str(str.count)[4]
+    = eval(''+eval('str(str)[+all([])]')      # 'c'
 
+
+                                              # 'h' = str(str.count)[4]
              +eval('str(str'                                              # str(str
                                                                           # '.' = str(float(1)[1])
 
@@ -143,7 +144,7 @@ See [source code](pyfuck.py) for full details!
 ```
 
 
-### Hello World
+## Hello World
 
 ```python
 print("Hello, world!")
@@ -176,10 +177,10 @@ Test it yourseslf, and the expressnion above evaluates to`'print("Hello world!)'
 
 
 
-#TODO
+# TODO
 ----------------------
 
-* Compatible with python2
+* Make compatible with python2
 * Integrate with https://github.com/csvoss/onelinerizer to execute any python program
 * Enable the use of 'exec' instead of 'eval'
 * Shorter / more efficient encoding
