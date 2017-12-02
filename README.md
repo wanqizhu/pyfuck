@@ -1,4 +1,4 @@
-Pyfuck -- Run any Python command using only **[(+travels')]**.
+Pyfuck -- Esoteric Python using only **[(+travels')]**.
 =========
 
 How few distinct characters can we use to simulate any python program?
@@ -7,7 +7,7 @@ We can at least do 13! **[(+travels')]**
 
 My initial hope is to avoid all alphanumeric characters. Unfortunately, because python has strong-typing (as opposde to javascript), we cannot implicitly cast between e.g. integers and strings. This means that, as far as I could figure out, there's no way to call a function or get a string without using some alhpanumeric character to start with.
 
-Luckily, we can still avoid all numbers, and only use 7 letters to enable `eval` and `str`, from where we'll construct everything.
+Luckily, we can still avoid all numbers, and only use 7 letters to enable `eval` and `str`, which allows we'll construct everything else.
 
 Inspired by [jsfuck](jsfuck.com).
 
@@ -33,6 +33,7 @@ digits = {
 With integers, we can take advantage of string indexing to get individual characters. In particular, calling `str` on an object/function gives its definition/docstrings, from which we can pick out individual characters.
 
 ```python
+# python 3; slightly different str(...) in python2
 str(str)
 "<class 'str'>"
 
@@ -44,11 +45,11 @@ For example, `str(str)[1]` gives `c`. This gives us the following characters:
 
 ```python
 {
-    'c': 'str(str)[+all([])]',  # str(str)[1]
-    'f': 'str(eval)[eval(str(' + digits[1] + ')+str(' + digits[0] + '))]', # str(eval)[10]
-    'n': 'str(eval)[' + digits[8] + ']',  # str(eval)[8]
+    'c': 'str(str)[+all([])]',                                              # str(str)[1]
+    'f': 'str(eval)[eval(str(' + digits[1] + ')+str(' + digits[0] + '))]',  # str(eval)[10]
+    'n': 'str(eval)[' + digits[8] + ']',                                    # str(eval)[8]
     'o': 'str(eval)[eval(str(' + digits[1] + ')+str(' + digits[6] + '))]',  # str(eval)[16]
-    'u': 'str(eval)[' + digits[2] + ']'. # str(eval)[2]
+    'u': 'str(eval)[' + digits[2] + ']'.                                    # str(eval)[2]
 }
 
 ```
@@ -60,7 +61,7 @@ This allows us to build more complex characters, using additional docstrings:
 ```python
 {
   # str(float(1))[1]
-
+  # eval('str(' + 'f' + 'l' + 'o' + 'at(' + '1' + '))[' + '1' + ']')
   '.': "+".join(["eval('str('", DICT['f'], "'l'", DICT['o'],
                  "'at(" + digits[1] + "))[" + digits[1] + "]')"])
 
@@ -82,7 +83,7 @@ Now, we have the characters `chr` and access to any integer, so we can simply ca
 
 
 
-Writing the actual encoding function turned out to be a pain. I'm still not fully sure what the issues were, but quotation nesting / use of eval(...) / repeated substitution really messed with me. Alas, it seem to work now!
+Writing the actual encoding function turned out to be a pain. Quotation nesting / use of eval(...) / repeated substitution was really messy to encode. Alas, it seem to work now!
 
 
 See [source code](pyfuck.py) for full details!
@@ -91,6 +92,21 @@ See [source code](pyfuck.py) for full details!
 
 Examples
 --------
+
+```python
+'@' = chr(64)
+    = eval('c'                + 'h'                                   + 'r(' + '64' + ')')
+    = eval(str(str)[+all([])] + str(str.count)[4]                     + 'r(' + str(6) + str(4) + ')')
+    = ...                     + eval('str(str' + '.' + 'count)[4]')   + 'r(' + str((1+1+1+1+1+1)+str((1+1+1+1)+')')
+    
+    = ...                     # substituting expression for '.', 'c', 'o', 'u', 'n'; substituing +all([]) for 1
+
+
+    = eval(''+eval('str(str)[+all([])]')+eval('str(str'+eval('str('+str(eval)[eval(str((+all([])))+str((+all([[]]))))]+'l'+str(eval)[eval(str((+all([])))+str((all([])+all([])+all([])+all([])+all([])+all([]))))]+'at((+all([]))))[(+all([]))]')+str(str)[+all([])]+str(eval)[eval(str((+all([])))+str((all([])+all([])+all([])+all([])+all([])+all([]))))]+str(eval)[(all([])+all([]))]+str(eval)[(all([])+all([])+all([])+all([])+all([])+all([])+all([])+all([]))]+'t)[(all([])+all([])+all([])+all([]))]')+'r('+str((all([])+all([])+all([])+all([])+all([])+all([])))+str((all([])+all([])+all([])+all([])))+')')
+
+```
+
+
 
 
 ```python
