@@ -12,6 +12,7 @@ digits = {
 for i in range(3, 10):
     digits[i] = digits[i-1] + digits[1]
 
+# use paranthesis in case. Not sure if needed
 for i in range(0, 10):
     digits[i] = '(' + digits[i] + ')'
 
@@ -19,43 +20,27 @@ for i in range(0, 10):
 
 
 DICT = {
-    # True: 'all([])',
-    # False: 'all([[]])',
-    
-
-    #'<': 'str(str)[0]',
-    #'>': 'str(str)[12]',
-    
     # 'a': 'str(str)[' + digits[3] + ']',
-    #'b': 'str(eval)[1]',
     'c': 'str(str)[+all([])]',  # 1
     # 'e': 'str(eval)[eval(str(' + digits[1] + ')+str(' + digits[9] + '))]',
     'f': 'str(eval)[eval(str(' + digits[1] + ')+str(' + digits[0] + '))]', # 10
-    #'i': 'str(eval)[3]',
-    #'l': 'l',
     'n': 'str(eval)[' + digits[8] + ']',  # 8
     'o': 'str(eval)[eval(str(' + digits[1] + ')+str(' + digits[6] + '))]',
-    #'r': 'r',
-    #'s': 's',
-    #'t': 't',
     'u': 'str(eval)[' + digits[2] + ']',
-    #'v': 'v',
-
-    #' ': 'str(str)[6]',
-    #'-': 'str(eval)[6]',
     '\'': 'str(str)[' + digits[7] + ']',
-
-
-    # have 'float'
-
-    ## now we have ord and chr, so we can get every alphanumeric var
 }
 
+# have 'float'  
 DICT['.'] = "+".join(["eval('str('", DICT['f'], "'l'", DICT['o'],
             "'at(" + digits[1] + "))[" + digits[1] + "]')"]) #'str(float(1))[1]'
 
+# have str.count
 DICT['h'] = "+".join(["eval('str(str'", DICT['.'],
             DICT['c'], DICT['o'], DICT['u'], DICT['n'], "'t)[" + digits[4] + "]')"]) # str(str.count)[4]
+
+## Now we have chr(), we can get every alphanumeric var
+
+
 
 # print(DICT)
 
@@ -66,42 +51,37 @@ for i in DICT:
 
 ## convery every program into a string, then wrap eval(...) around it
 
-TMP = '\x01'
+TMP = '\x01'  # substitute out single quotes
 
 def encode(s, with_eval=False):
     new_str = ''
     for c in s:
+        # substitute for arbituary characters using chr()
         if not c.isdigit() and c not in base and c not in DICT:
             new_str += "'+eval('chr(" + str(ord(c)) + ")')+'"
         else:
             if c == '\'':
-                new_str += "'+" + TMP + "+'"
+                new_str += "'+" + TMP + "+'"  # fix triple-quote issue
             else:
                 new_str += c
 
     s = "'" + new_str + "'"
-    # if s[:3] == "''+":
-    #     s = s[3:]
-    # if s[-3:] == "+''":
-    #     s = s[:-3]
 
-    # print(s)
-    # print("\n")
     new_str = ''
     for c in s:
         if c in base or c.isdigit() or c == TMP:
             new_str += c
         else:
+            # substitute characters in DICT with base characters
             if c in ['.', 'h']:
                 new_str += "'+" + DICT[c] + "+'"
             else:
                 new_str += "'+eval('" + DICT[c] + "')+'"
 
     s = new_str
-    # print(s)
-    # print("\n")
     new_str = ''
 
+    # deal with numbers
     def repl(matchobj):
         i = matchobj.group(0)
 
@@ -114,8 +94,10 @@ def encode(s, with_eval=False):
 
     s = re.sub('\d+', repl, s)
 
+    # sub back in quote
     s = s.replace(TMP, DICT['\''])
 
+    # clear out leading/trailing empty strings
     s = s.replace("+''+", "+")
     if s[:3] == "''+":
         s = s[3:]

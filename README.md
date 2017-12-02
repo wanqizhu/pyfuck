@@ -1,4 +1,4 @@
-Pyfuck -- Python esolang language using only *+travels[]'()*.
+Pyfuck -- Run any Python Command Using Only **[(+travels')]**.
 =========
 
 How few distinct characters can we use to simulate any python program?
@@ -16,17 +16,72 @@ Inspired by [jsfuck](jsfuck.com).
 Encoding Process
 ----------------------
 
-WIP -- see [source code](pyfuck.py) for now!
+To evaluate any python expression, we can turn it into a string and call `eval()`. Because we can decompose the string arbituarily (break up each character and rebuilding with `+`), our main idea is to use our small set of characters and map to an arbituary character, which then enables us to execute arbituarily complex python code.
 
 
-TODO
-----------------------
+First, we notice that `+True` converts the boolean into the integer 1, and `+False` gives 0. This allows us to build up the integers:
 
-* Compatible with python2
-* Integrate with https://github.com/csvoss/onelinerizer to execute any python program
-* Enable the use of 'exec' instead of 'eval'
-* REMOVE THE NEED OF `'`  -- this is actually possible! We can globally replace `'` with `str(str)[(all([])+all([])+all([])+all([])+all([])+all([])+all([]))]`, for example, and reduce our character set to 12 characters.
-* Shorter / more efficient encoding
+```python
+digits = {
+    0: '+all([[]])',
+    1:  '+all([])',
+    2: 'all([])+all([])'  # 1 + 1
+    # and so forth
+}
+```
+
+With integers, we can take advantage of string indexing to get individual characters. In particular, calling `str` on an object/function gives its definition/docstrings, from which we can pick out individual characters.
+
+```python
+str(str)
+"<class 'str'>"
+
+str(eval)
+'<built-in function eval>'
+```
+
+For example, `str(str)[1]` gives `c`. This gives us the following characters:
+
+```python
+{
+    'c': 'str(str)[+all([])]',  # str(str)[1]
+    'f': 'str(eval)[eval(str(' + digits[1] + ')+str(' + digits[0] + '))]', # str(eval)[10]
+    'n': 'str(eval)[' + digits[8] + ']',  # str(eval)[8]
+    'o': 'str(eval)[eval(str(' + digits[1] + ')+str(' + digits[6] + '))]',  # str(eval)[16]
+    'u': 'str(eval)[' + digits[2] + ']'. # str(eval)[2]
+}
+
+```
+
+where digits[i] is the string representation of the number i from above. Note how to get 10 or larger numbers, we use string concatination on each digit, so we don't need a million copies of `'+all([])'` to form large numbers.
+
+This allows us to build more complex characters, using additional docstrings:
+
+```python
+{
+  # str(float(1))[1]
+
+  '.': "+".join(["eval('str('", DICT['f'], "'l'", DICT['o'],
+                 "'at(" + digits[1] + "))[" + digits[1] + "]')"])
+
+  # str(str.count)[4]
+  'h': "+".join(["eval('str(str'", DICT['.'],
+                 DICT['c'], DICT['o'], DICT['u'], DICT['n'], "'t)[" + digits[4] + "]')"])
+}
+```
+
+We use `+` to build up the string we want, and then wraps it around in eval to get the desired character.
+
+
+Now, we have the characters `chr` and access to any integer, so we can simply call `chr()` to get any ascii character! Bingo.
+
+
+
+Writing the actual encoding function turned out to be a pain. I'm still not fully sure what the issues were, but quotation nesting / use of eval(...) / repeated substitution really messed with me. Alas, it seem to work now!
+
+
+See [source code](pyfuck.py) for full details!
+
 
 
 Examples
@@ -47,3 +102,19 @@ eval(''+eval('str(str)[+all([])]')+eval('str(str'+eval('str('+str(eval)[eval(str
 ```
 
 a total of 6019 characters using only `+travels[]'()` that evaluates to the string `'print("Hello world!)'` (add eval(...) around it to actually print).
+
+
+
+
+
+TODO
+----------------------
+
+* Compatible with python2
+* Integrate with https://github.com/csvoss/onelinerizer to execute any python program
+* Enable the use of 'exec' instead of 'eval'
+* REMOVE THE NEED OF `'`  -- this is actually possible! We can globally replace `'` with `str(str)[(all([])+all([])+all([])+all([])+all([])+all([])+all([]))]`, for example, and reduce our character set to 12 characters.
+* Shorter / more efficient encoding
+* Can we use even fewer characters? What's the limit?
+
+
