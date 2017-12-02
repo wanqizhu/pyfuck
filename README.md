@@ -1,13 +1,16 @@
-Pyfuck -- Python esolang language using only `+travels[]'()`.
+Pyfuck -- Python esolang language using only *+travels[]'()*.
 =========
 
 How few distinct characters can we use to simulate any python program?
 
-Inspired by [jsfuck](jsfuck.com).
+We can at least do 13!
 
-Unfortunately, because python has strong-typing (as opposde to javascript), we cannot implicitly cast between e.g. integers and strings. This means that, as far as I could figure out, there's no way to call a function or get a string without using some alhpanumeric character to start with.
+My initial hope is to avoid all alphanumeric characters. Unfortunately, because python has strong-typing (as opposde to javascript), we cannot implicitly cast between e.g. integers and strings. This means that, as far as I could figure out, there's no way to call a function or get a string without using some alhpanumeric character to start with.
 
 Luckily, we can still avoid all numbers, and only use 7 letters to enable `eval` and `str`, from where we'll construct everything.
+
+Inspired by [jsfuck](jsfuck.com).
+
 
 
 Encoding Process
