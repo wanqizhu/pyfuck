@@ -1,4 +1,4 @@
-Pyfuck -- Run any Python Command Using Only **[(+travels')]**.
+Pyfuck -- Run any Python command using only **[(+travels')]**.
 =========
 
 How few distinct characters can we use to simulate any python program?
@@ -75,6 +75,11 @@ We use `+` to build up the string we want, and then wraps it around in eval to g
 
 Now, we have the characters `chr` and access to any integer, so we can simply call `chr()` to get any ascii character! Bingo.
 
+```python
+>>> chr(119) + chr(111) + chr(119)
+'wow'
+```
+
 
 
 Writing the actual encoding function turned out to be a pain. I'm still not fully sure what the issues were, but quotation nesting / use of eval(...) / repeated substitution really messed with me. Alas, it seem to work now!
@@ -113,8 +118,10 @@ TODO
 * Compatible with python2
 * Integrate with https://github.com/csvoss/onelinerizer to execute any python program
 * Enable the use of 'exec' instead of 'eval'
-* REMOVE THE NEED OF `'`  -- this is actually possible! We can globally replace `'` with `str(str)[(all([])+all([])+all([])+all([])+all([])+all([])+all([]))]`, for example, and reduce our character set to 12 characters.
 * Shorter / more efficient encoding
+
+* REMOVE THE NEED OF `'`  -- this is actually possible!
+  - We can globally replace `'` with `str(str)[(all([])+all([])+all([])+all([])+all([])+all([])+all([]))] = str(str)[8]`, for example, and reduce our character set to 12 characters.
 * Can we use even fewer characters? What's the limit?
 
 
