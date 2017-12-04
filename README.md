@@ -4,7 +4,7 @@ How few distinct characters can we use to write and execute any python program?
 
 We can at least do 13! **[(+travels')]**
 
-My initial hope is to avoid all alphanumeric characters. Unfortunately, because python has strong-typing (as opposde to javascript), we cannot implicitly cast between e.g. integers and strings. This means that, as far as I could figure out, there's no way to call a function or get a string without using some alhpanumeric character to start with.
+My initial hope is to avoid all alphanumeric characters. Unfortunately, because python has strong-typing (as opposed to javascript), we cannot implicitly cast between e.g. integers and strings. This means that, as far as I could figure out, there's no way to call a function or get a string without using some alphanumeric character to start with.
 
 Luckily, we can still avoid all numbers, and only use 7 letters to enable `eval` and `str`, which allows we'll construct everything else.
 
@@ -14,7 +14,7 @@ Inspired by [jsfuck](jsfuck.com).
 
 # Encoding Process
 
-To evaluate any python expression, we can turn it into a string and call `eval()`. Because we can decompose the string arbituarily (break up each character and rebuilding with `+`), our main idea is to use our small set of characters and map to an arbituary character, which then enables us to execute arbituarily complex python code.
+To evaluate any python expression, we can turn it into a string and call `eval()`. Because we can decompose the string arbitrarily (break up each character and rebuilding with `+`), our main idea is to use our small set of characters and map to an arbitrary character, which then enables us to execute arbitrarily complex python code.
 
 
 First, we notice that `+True` converts the boolean into the integer 1, and `+False` gives 0. This allows us to build up the integers:
@@ -53,7 +53,7 @@ For example, `str(str)[1]` gives `c`. This gives us the following characters:
 
 ```
 
-where digits[i] is the string representation of the number i from above. Note how to get 10 or larger numbers, we use string concatination on each digit, so we don't need a million copies of `'+all([])'` to form large numbers.
+where digits[i] is the string representation of the number i from above. Note how to get 10 or larger numbers, we use string concatenation on each digit, so we don't need a million copies of `'+all([])'` to form large numbers.
 
 This allows us to build more complex characters, using additional docstrings:
 
@@ -91,7 +91,7 @@ See [source code](pyfuck.py) for full details!
 
 # Examples
 
-## Encoding arbituary characters
+## Encoding arbitrary characters
 
 ```python
 '@' = chr(64)
@@ -164,7 +164,7 @@ eval(''+eval('str(str)[+all([])]')+eval('str(str'+eval('str('+str(eval)[eval(str
 
 6019 characters, but only 13 unique ones!
 
-Test it yourseslf, and the expressnion above evaluates to`'print("Hello world!)'`! Add eval(...) around it to actually run the command.
+Test it yourself, and the expression above evaluates to`'print("Hello world!)'`! Add eval(...) around it to actually run the command.
 
 
 
