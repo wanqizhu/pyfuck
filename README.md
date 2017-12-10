@@ -10,6 +10,8 @@ Luckily, we can still avoid all numbers, and only use 7 letters to enable `eval`
 
 Inspired by [jsfuck](jsfuck.com).
 
+*Note*: Evidently, this can be done in [7 characters in Python2](https://codegolf.stackexchange.com/a/110722). Ah well, this was tons of fun! :cry:
+
 
 
 # Encoding Process
