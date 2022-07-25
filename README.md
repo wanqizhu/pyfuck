@@ -20,22 +20,22 @@ code = pyfuck.encode_code('print("Hello World!")')
 TLDR: To execute any python3 string, we convert it into a sequence of chars converted from ints using the `%c` format string, concatenate and wrap the entire thing in `exec()`
 
 ### Obtaining Numbers
-First, we notice that `()==()` evaluates to True and `True==()` (or `(()==())==()`) evalutes to False. This allows us to build up the integers using 
+First, we notice that `()==()` evaluates to True and `()==''` evalutes to False. This allows us to build up the integers using 
 ```python
-0: (((()==())==())+((()==())==())) # False+False,
-1: (((()==())==())+(()==())),      # False+True
-2: ((()==())+(()==())),            # True+True
-3: ((()==())+(()==())+(()==()))    # True+True+True
+0: ((()=='')+(()==''))           # False+False,
+1: ((()=='')+(()==()))           # False+True
+2: ((()==())+(()==()))           # True+True
+3: ((()==())+(()==())+(()==()))  # True+True+True
 ```
 
 ### Obtaining Strings
 Once we have any non-negative integer we are able to build the strings using a concatenation of single charater format strings. Ie the byte string '\x00\x01\x02' can be represented by:
 ```python
-'%c'%0 + '%c'%1 + '%c'%2 + '%c'%3
+'%c'%0 + '%c'%1 + '%c'%2
 ```
 When we expand digits and remove spaces we get:
 ```python
-'%c'%(((()==())==())+((()==())==()))+'%c'%(((()==())==())+(()==()))+'%c'%((()==())+(()==()))+'%c'%((()==())+(()==())+(()==()))
+'%c'%((()=='')+(()==''))+'%c'%((()=='')+(()==()))+'%c'%((()==())+(()==()))
 ```
 
 ### Putting it all together

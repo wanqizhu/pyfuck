@@ -3,9 +3,9 @@
 def encode_digit(n: int) -> str:
     assert n >= 0, "n must be positive"
     if n == 0:
-        return "(((()==())==())+((()==())==()))"
+        return "((()=='')+(()==''))"
     elif n == 1:
-        return "(((()==())==())+(()==()))"
+        return "((()=='')+(()==()))"
     else:
         return "(" + "+".join(["(()==())"]*n) + ")"
 
