@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyfuck"
+version = "1.0.0"
+description = "用 13 个字符（+travels[]'()）写任意 Python 程序：编码器 + CLI + Flask Web UI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["esoteric", "obfuscation", "jsfuck", "code-golf"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Compilers",
+]
+dependencies = ["Flask>=3.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+pyfuck = "pyfuck.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pyfuck*"]
+
+[tool.setuptools.package-data]
+pyfuck = ["templates/*.html"]
+
+# ---------------------------------------------------------------- 代码检查
+# CI 跑的就是这份配置：ruff check .
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+# legacy/pyfuck.py 是上游原始文件，原样存档，不检查
+extend-exclude = ["legacy"]
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle 错误
+  "F",   # pyflakes：未定义名/未使用导入
+  "W",   # pycodestyle 警告
+  "I",   # isort：导入排序
+  "UP",  # pyupgrade：用新语法
+  "B",   # flake8-bugbear：常见陷阱
+  "C4",  # flake8-comprehensions
+  "SIM", # flake8-simplify
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pyfuck"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]

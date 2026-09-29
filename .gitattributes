@@ -1,0 +1,61 @@
+# +----------------------------------------------------------------+
+# | pyfuck .gitattributes                                          |
+# | 仓库内一律存 LF；检出时按平台（Windows 上可为 CRLF）            |
+# +----------------------------------------------------------------+
+
+# 默认：自动识别文本文件并在提交时规范化为 LF
+* text=auto
+
+# --- 必须始终以 LF 检出：脚本、CI、配置 ---
+*.sh            text eol=lf
+*.bash          text eol=lf
+Makefile        text eol=lf
+Dockerfile      text eol=lf
+.gitattributes  text eol=lf
+.github/**      text eol=lf
+*.toml          text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+*.cfg           text eol=lf
+*.ini           text eol=lf
+requirements*.txt text eol=lf
+
+# --- 源码与文档：统一 LF，避免跨平台 diff 噪音 ---
+*.py            text eol=lf
+*.pyi           text eol=lf
+*.md            text eol=lf
+*.html          text eol=lf
+*.css           text eol=lf
+*.js            text eol=lf
+*.json          text eol=lf
+
+# --- Windows 专用脚本需要 CRLF ---
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.ps1           text eol=crlf
+
+# --- 二进制：禁止行尾转换与文本 diff ---
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.webp          binary
+*.pdf           binary
+*.zip           binary
+*.gz            binary
+*.7z            binary
+*.exe           binary
+*.dll           binary
+*.woff          binary
+*.woff2         binary
+
+# --- 生成/混淆产物是一整行超长文本，diff 无意义 ---
+*.fuck.py       -diff -text
+pyfuck_output.py -diff -text
+
+# --- git archive / sdist 时排除（打包给用户的内容不需要这些）---
+/.github        export-ignore
+/tests          export-ignore
+/.gitignore     export-ignore
+/.gitattributes export-ignore

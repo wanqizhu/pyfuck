@@ -6,11 +6,101 @@ We can at least do 13! **[(+travels')]**
 
 My initial hope is to avoid all alphanumeric characters. Unfortunately, because python has strong-typing (as opposed to javascript), we cannot implicitly cast between e.g. integers and strings. This means that, as far as I could figure out, there's no way to call a function or get a string without using some alphanumeric character to start with.
 
+
 Luckily, we can still avoid all numbers, and only use 7 letters to enable `eval` and `str`, which allows we'll construct everything else.
 
 Inspired by [jsfuck](jsfuck.com).
 
 *Note*: Evidently, this can be done in [7 characters in Python2](https://codegolf.stackexchange.com/a/110722). Ah well, this was tons of fun! :cry:
+
+
+
+# 本仓库新增：编码器 + Web UI + CLI
+
+> 原始单文件脚本保留在 `legacy/pyfuck.py`（未改动），下面是新增的部分。
+
+## 目录结构
+
+```
+pyfuck/
+├── app.py                  # Web 启动脚本：python app.py
+├── pyproject.toml          # 打包元数据 + ruff 配置（可选 pip install -e .）
+├── requirements.txt        # Flask>=3.0
+├── .gitignore              # 缓存 / 构建产物 / 混淆产物
+├── .gitattributes          # 仓库内统一 LF、二进制标记、混淆产物不 diff
+├── .github/
+│   └── workflows/ci.yml    # CI：测试矩阵 + ruff + 打包冒烟
+├── pyfuck/                 # 核心包
+│   ├── __init__.py         # 对外 API：encode_program / encode_string / ALPHABET ...
+│   ├── __main__.py         # python -m pyfuck 入口
+│   ├── encoder.py          # 编码器（四层构造 + 启动自检）
+│   ├── cli.py              # 命令行
+│   ├── web.py              # Flask 应用（/ 编码页，/download 下载）
+│   └── templates/
+│       └── index.html      # 前端页面（暗色，含 CSS/JS）
+├── tests/                  # python -m unittest -v
+│   ├── test_encoder.py     # 单元测试：原语 / 往返 / 字符集 / 边界
+│   └── test_end_to_end.py  # 端到端：子进程真跑 + CLI + Web 测试客户端
+└── legacy/
+    └── pyfuck.py           # 最初的单文件实现（存档，仅支持表达式）
+```
+
+## 三种用法
+
+```bash
+pip install -r requirements.txt
+
+# 1) Web UI
+python app.py                            # 打开 http://127.0.0.1:5000
+python -m pyfuck --server --port 8000     # 等价写法，可指定端口
+
+# 2) 命令行
+python -m pyfuck hello.py -o hello.fuck.py --stats   # 编码文件
+python -m pyfuck -c "print('hi')" --run              # 编码片段并立刻运行验证
+echo "print(1)" | python -m pyfuck                   # 从 stdin 读源码
+
+# 3) 当库用
+python -c "import pyfuck; print(pyfuck.encode_program('print(1)')[:40])"
+
+# 测试
+python -m unittest -v                    # 36 个测试，约 7 秒
+
+# 代码检查（配置在 pyproject.toml，与 CI 完全一致）
+ruff check .                             # pip install ruff
+```
+
+## CI
+
+`.github/workflows/ci.yml` 三个 job，推送到任意分支或开 PR 就会跑：
+
+| job | 内容 |
+| --- | --- |
+| `test` | 矩阵：ubuntu × Python 3.10/3.11/3.12/3.13，外加 windows × 3.13；跑 `python -m unittest -v`（含真跑子进程的端到端测试） |
+| `lint` | `ruff check --output-format=github .`，问题直接标在 PR 的 diff 上 |
+| `package` | `python -m build` → 装 wheel → 在临时目录自检（确认 templates 进了 wheel）+ 跑一次 `pyfuck` CLI，最后上传 dist |
+
+> 本仓库 origin 指向上游 `wanqizhu/pyfuck`，fork 到自己账号推送后 CI 自动生效。
+
+## 相比 `legacy/pyfuck.py` 的改进
+
+| 问题 | 原实现 | `pyfuck/encoder.py` |
+| --- | --- | --- |
+| 只支持单个表达式 | `eval(<字符串>)` | `eval("exec")(<字符串>)`，支持 `def`/`for`/`import` 等任意语句 |
+| 单个 `0`/`1` | 生成 `str + int` → TypeError | 数字统一走 `str(1+1+…)` 字符串拼接 |
+| 依赖正则替换数字 | `re.sub('\d+')`，字符集易被破坏 | 全程字符串拼接，输出保证 ⊆ 13 字符 |
+| 超长表达式 | 左深 `a+b+c+…`，编译器递归可能爆栈 | 项数 >256 时用平衡括号拼接（深度 log₂n） |
+| 正确性 | 无校验 | import 时 `selfcheck()` 自检全部原语；`compile()` 语法自检 |
+
+实测：1.3 万字符源码 → 367 万字符输出，可编译、可运行；膨胀率约 250~400×。
+
+## 编码原理（四层）
+
+1. **整数**：`all([])` 是 `True`、`all([[]])` 是 `False`，加 `+` 得到 `1`/`0`，相加得到任意整数
+2. **单字符**：用整数给 `str(str)`、`str(eval)`、`str(str.count)`、`str(float(1))` 的结果取下标，
+   得到 `c u n f o ' . h`；字母 `t r a v e l s` 本来就在字符集里 → 拼出 `chr`、`str`
+3. **任意字符串**：`chr(N)` 拿到任意字符，用 `+` 拼起来
+4. **任意程序**：把整份源码变成一个字符串，`eval("exec")(源码字符串)` 执行
+   （`exec` 这个名字里的 `x` 不在字符集里，所以先用字符串拼出 `"exec"` 再 `eval` 成函数对象）
 
 
 
@@ -87,7 +177,7 @@ Now, we have the characters `chr` and access to any integer, so we can simply ca
 Writing the actual encoding function turned out to be a pain. Quotation nesting / use of eval(...) / repeated substitution was really messy to encode. Alas, it seem to work now!
 
 
-See [source code](pyfuck.py) for full details!
+See [source code](legacy/pyfuck.py) for full details!
 
 
 

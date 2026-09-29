@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pyfuck · 13 字符 Python 混淆器</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --panel: #161b22;
+        --panel-2: #1c2330;
+        --line: #2d3440;
+        --fg: #e6edf3;
+        --muted: #8b949e;
+        --accent: #7ee787;
+        --accent-2: #58a6ff;
+        --warn: #d29922;
+        --err: #f85149;
+        --radius: 12px;
+        --mono:
+          ui-monospace, SFMono-Regular, "Cascadia Mono", Consolas,
+          "Liberation Mono", monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px 20px 56px;
+        background: radial-gradient(
+          1200px 600px at 50% -200px,
+          #172131 0%,
+          var(--bg) 60%
+        );
+        color: var(--fg);
+        font:
+          14px/1.6 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          "Microsoft YaHei",
+          Roboto,
+          sans-serif;
+        min-height: 100vh;
+      }
+      .wrap {
+        max-width: 1500px;
+        margin: 0 auto;
+      }
+
+      header {
+        margin-bottom: 22px;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 26px;
+        letter-spacing: 0.3px;
+      }
+      h1 .lite {
+        color: var(--muted);
+        font-weight: 400;
+        font-size: 17px;
+        margin-left: 8px;
+      }
+      header p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 900px;
+      }
+      header code {
+        color: var(--accent);
+      }
+
+      .alphabet {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .alphabet span {
+        font-family: var(--mono);
+        font-size: 15px;
+        line-height: 1;
+        padding: 7px 10px;
+        border-radius: 8px;
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        color: var(--accent);
+      }
+      .alphabet .tag {
+        padding: 7px 12px;
+        color: var(--muted);
+        font-family: inherit;
+        font-size: 12px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 1080px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .card-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .card-head h2 {
+        margin: 0;
+        font-size: 15px;
+        letter-spacing: 0.5px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 260px;
+        resize: vertical;
+        background: #0b0f16;
+        color: var(--fg);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.55;
+        tab-size: 4;
+        white-space: pre;
+        overflow: auto;
+      }
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent-2);
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+      }
+      #output {
+        min-height: 300px;
+        color: var(--accent);
+        background: #0a0e14;
+      }
+
+      .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: var(--panel-2);
+        color: var(--muted);
+        border: 1px solid var(--line);
+      }
+      .chip:hover {
+        color: var(--fg);
+        border-color: var(--accent-2);
+      }
+
+      .opt {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .opt input {
+        accent-color: var(--accent-2);
+        width: 15px;
+        height: 15px;
+      }
+      .opt code {
+        color: var(--fg);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+        padding: 9px 16px;
+        border-radius: 9px;
+        background: var(--panel-2);
+        color: var(--fg);
+        border: 1px solid var(--line);
+        transition: 0.15s;
+      }
+      button:hover:not(:disabled) {
+        border-color: var(--accent-2);
+      }
+      button.primary {
+        background: linear-gradient(180deg, #2ea043, #238636);
+        border-color: #2ea043;
+        font-weight: 600;
+      }
+      button.primary:hover:not(:disabled) {
+        filter: brightness(1.1);
+      }
+      button:disabled {
+        opacity: 0.55;
+        cursor: progress;
+      }
+
+      .alert {
+        padding: 11px 14px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        border: 1px solid;
+        font-size: 13px;
+      }
+      .alert.error {
+        background: rgba(248, 81, 73, 0.08);
+        border-color: rgba(248, 81, 73, 0.4);
+        color: #ffb4ae;
+      }
+      .alert.warn {
+        background: rgba(210, 153, 34, 0.08);
+        border-color: rgba(210, 153, 34, 0.4);
+        color: #f0d48a;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+        gap: 8px;
+      }
+      .stat {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 8px 10px;
+      }
+      .stat .k {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .stat .v {
+        font-family: var(--mono);
+        font-size: 15px;
+        margin-top: 2px;
+      }
+      .stat .v.ok {
+        color: var(--accent);
+      }
+      .stat .v.no {
+        color: var(--err);
+      }
+      .stat .v.skip {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .empty {
+        color: var(--muted);
+        text-align: center;
+        padding: 60px 10px;
+        font-size: 13px;
+      }
+
+      .footnote {
+        margin-top: 26px;
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.9;
+      }
+      .footnote h3 {
+        color: var(--fg);
+        font-size: 13px;
+        margin: 0 0 6px;
+      }
+      .footnote code {
+        font-family: var(--mono);
+        color: var(--accent);
+        background: var(--panel);
+        padding: 1px 5px;
+        border-radius: 5px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--accent);
+        color: #05240c;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 9px 18px;
+        border-radius: 999px;
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.22s;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Pyfuck 混淆器<span class="lite">13 个字符写任意 Python</span></h1>
+        <p>
+          输入 Python 源码，输出等价的混淆程序：<strong
+            >单行表达式、只使用下面 13 个字符、零依赖</strong
+          >， 保存成 <code>.py</code> 后
+          <code>python xxx.py</code> 即可运行，效果与原源码一致。
+        </p>
+        <div class="alphabet">
+          {% for c in alphabet %}<span>{{ c }}</span>{% endfor %}
+          <span class="tag">共 13 种字符</span>
+        </div>
+      </header>
+
+      {% if error %}
+      <div class="alert error">⚠ {{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="/" id="main-form">
+        <div class="grid">
+          <!-- ============ 输入 ============ -->
+          <section class="card">
+            <div class="card-head">
+              <h2>① 源代码</h2>
+              <span class="hint"
+                >上限 {{ max_source }} 字符 · 输出约为源码的 250~400 倍</span
+              >
+            </div>
+            <textarea
+              name="source"
+              id="source"
+              spellcheck="false"
+              placeholder='print("Hello, world!")'
+            >
+{{ source }}</textarea
+            >
+            <div class="chips">
+              {% for s in samples %}<button
+                type="button"
+                class="chip"
+                data-code="{{ s.code }}"
+              >
+                {{ s.name }}</button
+              >{% endfor %}
+            </div>
+            <label class="opt">
+              <input
+                type="checkbox"
+                name="auto_print"
+                {%
+                if
+                auto_print
+                %}checked{%
+                endif
+                %}
+              />
+              <span
+                >表达式模式：源码若是单个表达式，自动包一层
+                <code>print(...)</code> 以便看到结果</span
+              >
+            </label>
+            <div class="actions">
+              <button type="submit" class="primary" id="submit-btn">
+                开始混淆
+              </button>
+              <button type="button" id="clear-btn">清空</button>
+            </div>
+          </section>
+
+          <!-- ============ 输出 ============ -->
+          <section class="card">
+            <div class="card-head">
+              <h2>② 混淆结果</h2>
+              {% if result %}<span class="hint">原样复制 / 下载即可运行</span>{%
+              endif %}
+            </div>
+
+            {% if result %}
+            <div class="stats">
+              <div class="stat">
+                <div class="k">源码长度</div>
+                <div class="v">{{ result.source_length }}</div>
+              </div>
+              <div class="stat">
+                <div class="k">输出长度</div>
+                <div class="v">{{ result.length }}</div>
+              </div>
+              <div class="stat">
+                <div class="k">膨胀倍数</div>
+                <div class="v">{{ "%.0f"|format(result.ratio) }}×</div>
+              </div>
+              <div class="stat">
+                <div class="k">唯一字符</div>
+                <div class="v {{ 'ok' if result.char_count <= 13 else 'no' }}">
+                  {{ result.char_count }}
+                </div>
+              </div>
+              <div class="stat">
+                <div class="k">字符集校验</div>
+                <div class="v {{ 'ok' if result.charset_ok else 'no' }}">
+                  {{ "通过" if result.charset_ok else "异常" }}
+                </div>
+              </div>
+              <div class="stat">
+                <div class="k">语法自检</div>
+                {% if result.syntax_ok %}
+                <div class="v ok">通过</div>
+                {% else %}
+                <div class="v skip">已跳过（体积过大）</div>
+                {% endif %}
+              </div>
+              <div class="stat">
+                <div class="k">编码耗时</div>
+                <div class="v">{{ "%.0f"|format(result.elapsed_ms) }} ms</div>
+              </div>
+              <div class="stat">
+                <div class="k">实际用到的字符</div>
+                <div class="v" style="font-size: 12px; word-break: break-all">
+                  {{ result.chars }}
+                </div>
+              </div>
+            </div>
+
+            {% if result.truncated %}
+            <div class="alert warn">
+              输出太长（{{ result.length }} 字符），下方只预览前 20 万字符。
+              点「下载 .py」拿到完整文件，或直接在终端运行。
+            </div>
+            {% endif %}
+
+            <textarea id="output" readonly spellcheck="false">
+{{ result.preview }}</textarea
+            >
+
+            <div class="actions">
+              <button type="button" class="primary" id="copy-btn">
+                复制混淆代码
+              </button>
+              <button type="submit" formaction="/download" id="download-btn">
+                下载 .py 完整文件
+              </button>
+            </div>
+            {% else %}
+            <div class="empty">
+              左侧填入源码 → 点「开始混淆」<br />结果会出现在这里
+            </div>
+            {% endif %}
+          </section>
+        </div>
+      </form>
+
+      <div class="footnote">
+        <h3>怎么用</h3>
+        <code>python app.py</code> 启动本服务 → 页面里编码 → 下载得到
+        <code>pyfuck_output.py</code> → 拿到任何装了 CPython 的机器上
+        <code>python pyfuck_output.py</code>，输出与原程序完全相同。
+        生成物只有一个表达式，形如
+        <code>eval(…"exec"…)(…)</code>，不依赖本项目的任何文件。
+        <h3>工作原理（四层构造）</h3>
+        ① <code>all([])=True</code> / <code>all([[]])=False</code>，加
+        <code>+</code> 得到整数 0、1，再相加得到任意整数 → ② 用这些整数给
+        <code>str(str)</code>、<code>str(eval)</code>、<code
+          >str(str.count)</code
+        >
+        的结果取下标，得到字符 <code>c u n f o ' . h</code>； 字母
+        <code>t r a v e l s</code> 直接可用，于是拼出 <code>chr</code> 与
+        <code>str</code> → ③ <code>chr(N)</code> 拿到任意字符，用
+        <code>+</code> 拼出任意字符串 → ④ 把整份源码变成一个字符串，用
+        <code>eval("exec")(源码字符串)</code> 执行，即可支持
+        <code>def</code>/<code>for</code>/<code>import</code> 等任意语句。
+        <h3>注意</h3>
+        输出体积膨胀很大（本例约 300×），且运行时会做大量
+        <code>eval</code>，适合演示与出题，不适合真实项目；
+        页面上的「语法自检」只 <code>compile</code> 不执行你的代码。
+      </div>
+    </div>
+
+    <div class="toast" id="toast">已复制</div>
+
+    <script>
+      const sourceEl = document.getElementById("source");
+      const outputEl = document.getElementById("output");
+      const toast = document.getElementById("toast");
+
+      function showToast(text) {
+        toast.textContent = text;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1400);
+      }
+
+      // 示例代码
+      document.querySelectorAll(".chip").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          sourceEl.value = btn.dataset.code;
+          sourceEl.focus();
+        });
+      });
+
+      document.getElementById("clear-btn").addEventListener("click", () => {
+        sourceEl.value = "";
+        sourceEl.focus();
+      });
+
+      const copyBtn = document.getElementById("copy-btn");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          const text = outputEl.value;
+          try {
+            await navigator.clipboard.writeText(text);
+            showToast("已复制 " + text.length.toLocaleString() + " 个字符");
+          } catch (e) {
+            outputEl.select();
+            document.execCommand("copy");
+            showToast("已复制（回退方案）");
+          }
+        });
+      }
+
+      // 大源码编码要几秒，给个进行中的反馈
+      const form = document.getElementById("main-form");
+      const submitBtn = document.getElementById("submit-btn");
+      form.addEventListener("submit", (e) => {
+        if (e.submitter && e.submitter.formAction.endsWith("/download")) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "编码中…（大源码可能需要几秒）";
+      });
+    </script>
+  </body>
+</html>

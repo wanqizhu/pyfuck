@@ -1,0 +1,108 @@
+name: CI
+
+# 触发：推送到任何分支、以及所有 PR。
+# 注意：本仓库的 origin 指向上游 wanqizhu/pyfuck，若你是 fork 后开发，
+# 推到自己仓库时这套 workflow 就会自动生效。
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 同一分支的重复推送取消掉上一轮，省 CI 额度
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------- 测试矩阵
+  test:
+    name: test / py${{ matrix.python }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          # 兜底验证 Windows（本项目在 Windows 上开发，路径/编码问题容易只在 Windows 出现）
+          - os: windows-latest
+            python: "3.13"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: 打印环境信息
+        run: python -VV
+      - name: 单元测试 + 端到端测试
+        run: python -m unittest -v
+
+  # ------------------------------------------------------------------ 代码检查
+  lint:
+    name: lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: 安装 ruff
+        run: python -m pip install ruff
+      - name: ruff check（配置见 pyproject.toml）
+        run: ruff check --output-format=github .
+
+  # ------------------------------------------- 打包 & 安装后冒烟（真实使用路径）
+  package:
+    name: package & smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: 构建 sdist/wheel
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: 安装 wheel（含模板等 package-data）
+        run: python -m pip install dist/*.whl
+      - name: 安装后自检 + 编码并运行
+        # 切到临时目录，避免 import 到源码目录而掩盖打包缺失
+        working-directory: ${{ runner.temp }}
+        run: |
+          python - <<'PY'
+          import pathlib
+
+          import pyfuck
+
+          pyfuck.selfcheck()
+
+          # 注意 app.template_folder 只是个相对名（'templates'），
+          # 必须挂到 app.root_path 上才是真实路径
+          from pyfuck.web import app
+
+          template = pathlib.Path(app.root_path) / app.template_folder / "index.html"
+          assert template.is_file(), f"模板没进 wheel: {template}"
+
+          resp = app.test_client().get("/")
+          assert resp.status_code == 200, f"首页渲染失败: HTTP {resp.status_code}"
+          print(f"打包自检通过：首页 200，模板 {template}")
+          PY
+
+          pyfuck -c "print('hello from packed wheel')" -o encoded.py --stats
+          python encoded.py
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error

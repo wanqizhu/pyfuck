@@ -92,7 +92,7 @@ def encode(s, with_eval=False):
         else:
             return "'+" + "+".join(['str(' + digits[int(j)] + ')' for j in i]) + "+'"
 
-    s = re.sub('\d+', repl, s)
+    s = re.sub('\d+', repl, s) # type: ignore
 
     # sub back in quote
     s = s.replace(TMP, DICT['\''])
